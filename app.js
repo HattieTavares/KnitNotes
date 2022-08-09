@@ -5,6 +5,7 @@ const connectDB = require("./config/db")
 const morgan = require("morgan")
 const passport = require("passport")
 const session = require("express-session")
+const MongoStore = require("connect-mongo")
 const exphbs = require("express-handlebars")
 
 //load config
@@ -16,6 +17,10 @@ require("./config/passport")(passport)
 connectDB()
 
 const app = express()
+
+//Body parser
+app.use(express.urlencoded({ extended: false }))
+app.use(express.json())
 
 //logging
 if(process.env.NODE_ENV === "development") {
@@ -32,6 +37,9 @@ app.use(
         secret: "keyboard cat",
         resave: false,
         saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGO_URI
+        })
     })
 )
 
@@ -45,6 +53,7 @@ app.use(express.static(path.join(__dirname, "public")))
 //Routes - using routes created in index.js
 app.use("/", require("./routes/index"))
 app.use("/auth", require("./routes/auth"))
+app.use("/stories", require("./routes/stories"))
 
 const PORT = process.env.PORT || 8500
 
